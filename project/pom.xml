@@ -53,7 +53,7 @@
     <module>client</module>
     <module>RobustClient</module>
     <module>RobustServiceTrackerClient</module>
-    
+    <module>config-admin</module>
   </modules>
 
   <build>
