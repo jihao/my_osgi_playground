@@ -50,10 +50,15 @@
     <module>simple-api</module>
     <module>simple-impl</module>
     <module>complex-impl</module>
+    <!-- 
     <module>client</module>
     <module>RobustClient</module>
+     -->
     <module>RobustServiceTrackerClient</module>
+    <!-- not done with it yet 
     <module>config-admin</module>
+     -->
+    <module>EchoServer</module>
   </modules>
 
   <build>
