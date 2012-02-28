@@ -53,12 +53,6 @@
 		    <artifactId>org.apache.felix.http.bundle</artifactId>
 		    <version>2.2.0</version>
 		</dependency>
-		<dependency>
-		    <groupId>org.apache.felix</groupId>
-		    <artifactId>javax.servlet</artifactId>
-		    <version>1.0.0</version>
-		    <type>bundle</type>
-		</dependency>
 	</dependencies>
 
 	<build>
