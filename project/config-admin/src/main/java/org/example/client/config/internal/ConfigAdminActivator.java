@@ -1,16 +1,26 @@
 package org.example.client.config.internal;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.Hashtable;
+import java.util.List;
+import java.util.Properties;
 
-import org.example.client.config.PrettyPrinterConfigurator;
+import org.example.client.config.DataBaseConnectionConfigurator;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.InvalidSyntaxException;
+import org.osgi.framework.ServiceReference;
 import org.osgi.framework.ServiceRegistration;
+import org.osgi.service.cm.Configuration;
+import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.service.cm.ManagedService;
-import org.osgi.service.log.LogService;
-import org.osgi.util.tracker.ServiceTracker;
 
 /**
  * Extension of the default OSGi bundle activator
@@ -21,20 +31,9 @@ public final class ConfigAdminActivator
 	// Bundle's context.
     private BundleContext m_context = null;
     
-    private ServiceRegistration ppcService;
-    /**
-     * Implements BundleActivator.start(). Crates a service
-     * tracker to monitor dictionary services and starts its "word
-     * checking loop". It will not be able to check any words until
-     * the service tracker find a dictionary service; any discovered
-     * dictionary service will be automatically used by the client.
-     * It reads words from standard input and checks for their
-     * existence in the discovered dictionary.
-     * (NOTE: It is very bad practice to use the calling thread
-     * to perform a lengthy process like this; this is only done
-     * for the purpose of the tutorial.)
-     * @param context the framework context for the bundle.
-    **/
+    private ServiceRegistration dbConfigService;
+    private List configurationList = new ArrayList(); 
+    
     public void start( BundleContext context )
         throws Exception
     {
@@ -42,13 +41,32 @@ public final class ConfigAdminActivator
         
         registerConfigService();
         
-        
+        ServiceReference configurationAdminReference = context.getServiceReference(ConfigurationAdmin.class.getName());  
+        if (configurationAdminReference != null) 
+        {  
+            ConfigurationAdmin confAdmin = (ConfigurationAdmin) context.getService(configurationAdminReference);  
+              
+            Configuration configuration = confAdmin.createFactoryConfiguration("org.example.client.config.DataBaseConnectionConfigurator", null);  
+            Dictionary properties = createServiceProperties();
+            configuration.update(properties);  
+              
+            //Store in the configurationList the configuration object, the dictionary object
+            //or configuration.getPid()  for future use  
+            configurationList.add(configuration);  
+        }  
     }
+
+	private Dictionary createServiceProperties() {
+		Properties p = new Properties();
+		p.put("key1", "value1");
+		p.put("key2", "value2");
+		return p;
+	}
 
 	private void registerConfigService() {
 		Dictionary<String, String> props = new Hashtable<String, String>();
-        props.put("service.pid", "org.example.client.config.PrettyPrinterConfigurator");
-        ppcService = m_context.registerService(ManagedService.class.getName(), new PrettyPrinterConfigurator(), props);
+        props.put("service.pid", "org.example.client.config.DataBaseConnectionConfigurator");
+        dbConfigService = m_context.registerService(ManagedService.class.getName(), new DataBaseConnectionConfigurator(), props);
 	}
 
 	/*private void initConfigAdminServiceTracker() throws InvalidSyntaxException {
@@ -66,10 +84,92 @@ public final class ConfigAdminActivator
     {
         // no need to unregister our service - the OSGi framework handles it for us
         
-        if (ppcService != null) {
-            ppcService.unregister();
-            ppcService = null;
+        if (dbConfigService != null) {
+            dbConfigService.unregister();
+            dbConfigService = null;
         }
     }
+}
+
+//TODO: make CLI change config working 
+class ServerThread implements Runnable {
+
+	private int port;
+	private ServerSocket server;
+	
+	public ServerThread(int port) {
+		super();
+		this.port = port;
+	}
+	
+	public void shutdown() {
+		try {
+			server.close();
+		} catch (IOException e) {
+			System.err.println("[Exception] happened during shutdown ServerSocket");
+			e.printStackTrace();
+		}
+	}
+	
+	@Override
+	public void run() {
+        try {
+        	// Start our socket server listen on port 3333
+			server = new ServerSocket(port);
+			Socket client = null;
+			//accepts client connection
+			while( (client = server.accept()) != null ){
+				System.out.println("[Connection Established] client port:"+client.getPort());
+				//use another thread to handle client connection
+				new Thread(new ConnectionHandlerThread(client)).start();
+			}
+			
+		} catch (IOException e) {
+			System.err.println("[Exception] happened during listen for connections");
+			e.printStackTrace();
+		}
+	}
+	
+}
+class ConnectionHandlerThread implements Runnable {
+	private Socket socket;
+	public ConnectionHandlerThread(Socket socket) {
+		super();
+		this.socket = socket;
+	}
+	@Override
+	public void run() {
+		try {
+			System.out.println("Wait for client message....");
+			// the echo server implementation
+			BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+			String msg = reader.readLine();
+			while(msg!=null) {
+				System.out.println("Received:"+msg);
+				writer.write("[Echo]:"+msg+"\n");
+				writer.flush();
+				// exit when received message "bye"
+				if(msg.equalsIgnoreCase("bye")) {
+					break;
+				}
+				System.out.println("Wait for client message....");
+				msg = reader.readLine();
+			}
+			reader.close();
+			writer.close();
+			
+			System.out.println("[Connection closing] client port:"+socket.getPort());
+			//close connection when received "bye"
+			socket.close();
+			
+		} catch (IOException e) {
+			System.err.println("[Exception] happened during handle for connection");
+			e.printStackTrace();
+		}
+		
+		
+		
+	}
 }
 

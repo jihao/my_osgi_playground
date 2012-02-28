@@ -5,7 +5,7 @@ import java.util.Dictionary;
 import org.osgi.service.cm.ConfigurationException;
 import org.osgi.service.cm.ManagedService;
 
-public class PrettyPrinterConfigurator implements ManagedService {
+public class DataBaseConnectionConfigurator implements ManagedService {
 
 	@Override
 	public void updated(Dictionary props) throws ConfigurationException {
@@ -17,7 +17,6 @@ public class PrettyPrinterConfigurator implements ManagedService {
             // apply configuration from config admin
         	System.out.println("apply configuration from config admin");
         }
-
 	}
 
 }

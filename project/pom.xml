@@ -55,9 +55,9 @@
     <module>RobustClient</module>
      -->
     <module>RobustServiceTrackerClient</module>
-    <!-- not done with it yet 
+    <!-- not done with it yet  -->
     <module>config-admin</module>
-     -->
+    
     <module>EchoServer</module>
   </modules>
 
