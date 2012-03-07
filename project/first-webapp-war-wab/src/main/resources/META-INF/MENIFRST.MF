@@ -1,0 +1,3 @@
+Web-ContextPath: first-webapp-war-wab
+Webapp-Context: first-webapp-war-wab
+Bundle-ClassPath: WEB-INF/classes
