@@ -55,10 +55,12 @@
     <module>RobustClient</module>
      -->
     <module>RobustServiceTrackerClient</module>
-    <!-- not done with it yet  -->
     <module>config-admin</module>
     
     <module>EchoServer</module>
+	
+	<module>first-webapp-war-wab</module>
+	
   </modules>
 
   <build>
