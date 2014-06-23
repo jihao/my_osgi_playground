@@ -85,6 +85,7 @@
                     <!-- | some example Pax-Runner settings -->
                     <provision>
                         <param>--platform=felix</param>
+                        <param>--vmOptions=-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=7000</param>
                     </provision>
                 </configuration>
                 <executions>
