@@ -5,3 +5,8 @@ The environment was setup upon Maven + Felix, you can simplely start the Felix O
 The existing code should not be used as reference implementation, it's only dummy code, bad practise.
 
 
+# Start Eclipse as debug client
+ * Create a Remote Java Application in Debug Configurations
+ * Set "Connection Type" as "Startd(Socket Attach)"
+ * Set your Debugger Server information( configured in your design environment) in "Connection Properties" - 127.0.0.1,7000
+ * Set your Source Code in "Source" tab.
